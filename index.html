@@ -1,0 +1,1131 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <title>NoEstásSol@ — Borrador guiado para la autoridad laboral (100% en tu dispositivo)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#050614">
+    <meta name="description" content="Guía paso a paso para documentar hechos laborales (fechas, pruebas, contexto) y exportar un escrito en PDF. Funciona 100% en tu dispositivo, también sin conexión. Útil para personas y para equipos de RRHH.">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/img/noestassolo192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/img/noestassolo512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/img/noestassolo-apple-180.png">
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+    <!-- i18n + Export + App logic -->
+    <script src="i18n.js" defer></script>
+    <script src="export.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-root">
+      <!-- ================= HEADER ================= -->
+      <header class="app-header brand-header" role="banner">
+        <div class="brand">
+          <a
+            href="https://www.optimeflow.com/"
+            class="header-home-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Ir a OptimeFlow"
+            title="Ir a OptimeFlow"
+          >
+            <img
+              id="appLogo"
+              class="brand-logo heat"
+              alt="OptimeFlow(s) logo"
+              src="assets/img/logo.png"
+            >
+          </a>
+
+          <span id="brandWord" class="brand-word brand-neon">
+            OptimeFlow(s)
+          </span>
+
+          <!-- Tagline de la app -->
+          <div id="tagline" class="tagline" aria-hidden="true">
+            <span class="nes-title-chunk nes-no">
+              <span>N</span><span>o</span>
+            </span>
+            <span class="nes-title-chunk nes-estas">
+              <span>E</span><span>s</span><span>t</span><span>á</span><span>s</span>
+            </span>
+            <span class="nes-title-chunk nes-sol">
+              <span>S</span><span>o</span><span>l</span><span>@</span>
+            </span>
+          </div>
+
+          <!-- Solo para accesibilidad -->
+          <span id="i-app-title" class="sr-only">
+            NoEstásSol@
+          </span>
+
+          <!-- Botón ajustes -->
+          <div class="quick-controls">
+            <button class="icon-button" id="btnSettings" aria-expanded="false">
+              <span class="sr-only" data-i18n="settingsLabel">
+                Ajustes
+              </span>
+              <span class="icon-gear" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ================= SETTINGS SHEET ================= -->
+      <div id="settingsSheet" class="settings-sheet" aria-hidden="true">
+        <div class="settings-card">
+          <div class="settings-row">
+            <label for="themeSelect" data-i18n="themeLabel">
+              Tema
+            </label>
+            <select id="themeSelect" class="sel">
+              <option value="system" data-i18n="themeSystem">Sistema</option>
+              <option value="dark" data-i18n="themeDark">Núcleo oscuro</option>
+              <option value="midnight" data-i18n="themeMidnight">Azul medianoche</option>
+              <option value="nebula" data-i18n="themeNebula">Nebulosa neón</option>
+              <option value="ocean" data-i18n="themeOcean">Océano profundo</option>
+              <option value="forest" data-i18n="themeForest">Bosque esmeralda</option>
+              <option value="amber" data-i18n="themeAmber">Ámbar cálido</option>
+              <option value="violet" data-i18n="themeViolet">Violeta real</option>
+              <option value="mono" data-i18n="themeMono">Mono noir</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <label for="langSelect" data-i18n="languageLabel">
+              Idioma
+            </label>
+            <select id="langSelect" class="sel">
+              <option value="es">Español</option>
+              <option value="en">English</option>
+              <option value="it">Italiano</option>
+              <option value="de">Deutsch</option>
+              <option value="ru">Русский</option>
+              <option value="pt-br">Português (BR)</option>
+              <option value="ko">한국어</option>
+              <option value="ja">日本語</option>
+              <option value="zh">中文</option>
+              <option value="hi">हिन्दी</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <button id="installBtn" class="btn primary" data-i18n="installLabel">
+              Instalar app
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= MAIN (PANEL ANCHO + PESTAÑAS) ================= -->
+      <main class="hero">
+        <div class="nes-shell">
+          <section class="app-shell" aria-label="NoEstásSol@ borrador laboral">
+            <div class="editor-stack">
+              <!-- Cabecera -->
+              <header class="wizard-header">
+                <!-- Fila superior: solo título -->
+                <div class="wizard-header-top">
+                  <div class="wizard-header-text">
+                    <h1 class="wizard-title" data-i18n="wizardTitle">
+                      Borrador guiado para dejar constancia
+                    </h1>
+                  </div>
+                </div>
+
+                <!-- Fila inferior: columna izquierda (país + texto) + columna derecha (sesiones) -->
+                <div class="wizard-header-bottom">
+                  <div class="wizard-header-left">
+                    <div class="wizard-country">
+                      <label for="countrySelect" class="wizard-country-label" data-i18n="countryLabel">
+                        Idioma del país de la relación laboral
+                      </label>
+                      <select id="countrySelect" class="sel sel-country">
+                        <option value="es" data-i18n="countryEs">España</option>
+                        <option value="it" data-i18n="countryIt">Italia</option>
+                        <option value="fr" data-i18n="countryFr">Francia</option>
+                        <option value="de" data-i18n="countryDe">Alemania</option>
+                        <option value="pt" data-i18n="countryPt">Portugal</option>
+                        <option value="br" data-i18n="countryBr">Brasil</option>
+                      </select>
+                    </div>
+
+                    <p class="wizard-subtitle" data-i18n="wizardSubtitle">
+                      Si la “estructura” de tu organización tiene agujeros que todos ven y nadie nombra, respirar y ordenar los hechos ya es avanzar. Responde a unas preguntas y obtén un borrador claro y exportable para presentarlo (o guardarlo) ante la autoridad laboral competente del país seleccionado. Si eres empresa o RRHH, úsalo como espejo: detectar y corregir a tiempo evita que el problema escale.
+                    </p>
+                  </div>
+
+                  <div class="wizard-sessions-block">
+                    <span class="wizard-sessions-label" data-i18n="sessionLabel">
+                      Sesiones
+                    </span>
+                    <div class="wizard-sessions">
+                      <input
+                        id="sessionName"
+                        type="text"
+                        class="session-name"
+                        data-i18n-placeholder="sessionNamePlaceholder"
+                        placeholder="Nombre de la sesión"
+                      >
+                      <button
+                        type="button"
+                        class="btn ghost btn-xs"
+                        id="btnSessionSave"
+                        data-i18n="sessionSave"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        type="button"
+                        class="btn ghost btn-xs"
+                        id="btnSessionLoad"
+                        data-i18n="sessionLoad"
+                      >
+                        Cargar
+                      </button>
+                      <select id="sessionSelect" class="sel sel-session">
+                        <option value="" data-i18n="sessionSelectPlaceholder">
+                          Selecciona una sesión guardada…
+                        </option>
+                      </select>
+                      <button
+                        type="button"
+                        class="btn ghost btn-xs"
+                        id="btnSessionExport"
+                        data-i18n="sessionExportJson"
+                      >
+                        Exportar JSON
+                      </button>
+                      <button
+                        type="button"
+                        class="btn ghost btn-xs"
+                        id="btnSessionImport"
+                        data-i18n="sessionImportJson"
+                      >
+                        Cargar JSON
+                      </button>
+                      <input
+                        type="file"
+                        id="sessionFileInput"
+                        accept="application/json"
+                        class="sr-only"
+                      >
+                    </div>
+                  </div>
+                </div>
+              </header>
+
+              <!-- Pestañas -->
+              <nav class="wizard-tabs" role="tablist" aria-label="Navegación de secciones del borrador">
+                <button
+                  type="button"
+                  class="wizard-tab is-active"
+                  data-step="1"
+                  id="tab-step-1"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="step-1"
+                  data-i18n="step1Title"
+                >
+                  Tus datos
+                </button>
+                <button
+                  type="button"
+                  class="wizard-tab"
+                  data-step="2"
+                  id="tab-step-2"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="step-2"
+                  data-i18n="step2Title"
+                >
+                  Empresa y relación laboral
+                </button>
+                <button
+                  type="button"
+                  class="wizard-tab"
+                  data-step="3"
+                  id="tab-step-3"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="step-3"
+                  data-i18n="step3Title"
+                >
+                  Hechos que describes
+                </button>
+                <button
+                  type="button"
+                  class="wizard-tab"
+                  data-step="4"
+                  id="tab-step-4"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="step-4"
+                  data-i18n="step4Title"
+                >
+                  Revisa y exporta tu escrito
+                </button>
+              </nav>
+
+              <!-- Progreso -->
+              <div class="wizard-progress">
+                <span id="stepLabel" class="wizard-step-label" data-i18n="stepLabel">
+                  Paso 1 de 4
+                </span>
+                <div class="wizard-progress-bar">
+                  <div class="wizard-progress-fill" id="wizardProgressFill"></div>
+                </div>
+              </div>
+
+              <!-- Formulario por secciones (tabpanels) -->
+              <form id="complaintForm" class="wizard-form" novalidate>
+                <!-- Paso 1: Datos persona denunciante -->
+                <div
+                  class="form-step"
+                  data-step="1"
+                  id="step-1"
+                  role="tabpanel"
+                  aria-labelledby="tab-step-1"
+                >
+                  <h2 class="step-title" data-i18n="step1Title">
+                    Tus datos
+                  </h2>
+                  <p class="step-intro" data-i18n="step1Intro">
+                    La autoridad laboral necesita identificar a la persona que presenta el escrito. Puedes solicitar que tu identidad no se comunique a la empresa.
+                  </p>
+
+                  <div class="field">
+                    <label for="fullName" data-i18n="fullNameLabel">
+                      Nombre y apellidos
+                    </label>
+                    <input
+                      id="fullName"
+                      type="text"
+                      autocomplete="name"
+                      data-required="true"
+                      data-i18n-placeholder="fullNamePlaceholder"
+                      placeholder="Nombre y apellidos completos"
+                    >
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="idNumber" data-i18n="idNumberLabel">
+                        DNI, NIE o pasaporte
+                      </label>
+                      <input
+                        id="idNumber"
+                        type="text"
+                        autocomplete="off"
+                        data-required="true"
+                        data-i18n-placeholder="idNumberPlaceholder"
+                        placeholder="Número de documento"
+                      >
+                    </div>
+                    <div class="field">
+                      <label for="phone" data-i18n="phoneLabel">
+                        Teléfono (opcional)
+                      </label>
+                      <input
+                        id="phone"
+                        type="tel"
+                        autocomplete="tel"
+                        data-i18n-placeholder="phonePlaceholder"
+                        placeholder="Número de contacto"
+                      >
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="email" data-i18n="emailLabel">
+                      Correo electrónico (opcional)
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      autocomplete="email"
+                      data-i18n-placeholder="emailPlaceholder"
+                      placeholder="Dirección de correo"
+                    >
+                  </div>
+
+                  <div class="field">
+                    <label for="address" data-i18n="addressLabel">
+                      Domicilio
+                    </label>
+                    <input
+                      id="address"
+                      type="text"
+                      autocomplete="street-address"
+                      data-required="true"
+                      data-i18n-placeholder="addressPlaceholder"
+                      placeholder="Calle, número, piso..."
+                    >
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="postalCode" data-i18n="postalCodeLabel">
+                        Código postal
+                      </label>
+                      <input
+                        id="postalCode"
+                        type="text"
+                        autocomplete="postal-code"
+                        data-required="true"
+                        data-i18n-placeholder="postalCodePlaceholder"
+                        placeholder="Código postal"
+                      >
+                    </div>
+                    <div class="field">
+                      <label for="city" data-i18n="cityLabel">
+                        Municipio
+                      </label>
+                      <input
+                        id="city"
+                        type="text"
+                        autocomplete="address-level2"
+                        data-required="true"
+                        data-i18n-placeholder="cityPlaceholder"
+                        placeholder="Ciudad o municipio"
+                      >
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="role" data-i18n="roleLabel">
+                      Actúas como
+                    </label>
+                    <select id="role">
+                      <option value="worker" data-i18n="roleWorker">
+                        Persona trabajadora
+                      </option>
+                      <option value="exWorker" data-i18n="roleExWorker">
+                        Ex trabajadora
+                      </option>
+                      <option value="unionRep" data-i18n="roleUnionRep">
+                        Representante sindical
+                      </option>
+                      <option value="other" data-i18n="roleOther">
+                        Otra persona interesada
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="field hidden" id="roleOtherWrapper">
+                    <label for="roleOther" data-i18n="roleOtherLabel">
+                      Describe tu relación con la empresa
+                    </label>
+                    <input
+                      id="roleOther"
+                      type="text"
+                      data-i18n-placeholder="roleOtherPlaceholder"
+                      placeholder="Por ejemplo: familiar, profesional de apoyo, etc."
+                    >
+                  </div>
+                </div>
+
+                <!-- Paso 2: Empresa y relación laboral -->
+                <div
+                  class="form-step"
+                  data-step="2"
+                  id="step-2"
+                  role="tabpanel"
+                  aria-labelledby="tab-step-2"
+                  hidden
+                >
+                  <h2 class="step-title" data-i18n="step2Title">
+                    Empresa y relación laboral
+                  </h2>
+                  <p class="step-intro" data-i18n="step2Intro">
+                    Cuantos más datos de la empresa indiques, más fácil será identificarla.
+                  </p>
+
+                  <div class="field">
+                    <label for="companyName" data-i18n="companyNameLabel">
+                      Nombre o razón social de la empresa
+                    </label>
+                    <input
+                      id="companyName"
+                      type="text"
+                      data-required="true"
+                      data-i18n-placeholder="companyNamePlaceholder"
+                      placeholder="Nombre legal o comercial"
+                    >
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="companyId" data-i18n="companyIdLabel">
+                        CIF/NIF de la empresa (si lo conoces)
+                      </label>
+                      <input
+                        id="companyId"
+                        type="text"
+                        data-i18n-placeholder="companyIdPlaceholder"
+                        placeholder="Identificación fiscal"
+                      >
+                    </div>
+                    <div class="field">
+                      <label for="companySector" data-i18n="companySectorLabel">
+                        Sector o actividad
+                      </label>
+                      <input
+                        id="companySector"
+                        type="text"
+                        data-i18n-placeholder="companySectorPlaceholder"
+                        placeholder="Hostelería, comercio, limpieza, etc."
+                      >
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="companyAddress" data-i18n="companyAddressLabel">
+                      Domicilio social o centro de trabajo
+                    </label>
+                    <input
+                      id="companyAddress"
+                      type="text"
+                      data-required="true"
+                      data-i18n-placeholder="companyAddressPlaceholder"
+                      placeholder="Dirección del centro donde trabajas"
+                    >
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="companyPostalCode" data-i18n="companyPostalCodeLabel">
+                        Código postal del centro
+                      </label>
+                      <input
+                        id="companyPostalCode"
+                        type="text"
+                        data-i18n-placeholder="companyPostalCodePlaceholder"
+                        placeholder="Código postal"
+                      >
+                    </div>
+                    <div class="field">
+                      <label for="companyCity" data-i18n="companyCityLabel">
+                        Municipio del centro
+                      </label>
+                      <input
+                        id="companyCity"
+                        type="text"
+                        data-required="true"
+                        data-i18n-placeholder="companyCityPlaceholder"
+                        placeholder="Ciudad o municipio"
+                      >
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="companyProvince" data-i18n="companyProvinceLabel">
+                      Provincia
+                    </label>
+                    <input
+                      id="companyProvince"
+                      type="text"
+                      data-required="true"
+                      data-i18n-placeholder="companyProvincePlaceholder"
+                      placeholder="Provincia"
+                    >
+                  </div>
+
+                  <div class="field">
+                    <label for="workplace" data-i18n="workplaceLabel">
+                      Centro de trabajo concreto
+                    </label>
+                    <input
+                      id="workplace"
+                      type="text"
+                      data-i18n-placeholder="workplacePlaceholder"
+                      placeholder="Tienda, oficina, centro, delegación, etc."
+                    >
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="jobTitle" data-i18n="jobTitleLabel">
+                        Puesto o categoría profesional
+                      </label>
+                      <input
+                        id="jobTitle"
+                        type="text"
+                        data-i18n-placeholder="jobTitlePlaceholder"
+                        placeholder="Por ejemplo: camarero/a, dependiente/a..."
+                      >
+                    </div>
+                    <div class="field">
+                      <label for="contractType" data-i18n="contractTypeLabel">
+                        Tipo de contrato
+                      </label>
+                      <input
+                        id="contractType"
+                        type="text"
+                        data-i18n-placeholder="contractTypePlaceholder"
+                        placeholder="Indefinido, temporal, parcial, etc."
+                      >
+                    </div>
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="employmentStart" data-i18n="employmentStartLabel">
+                        Fecha de inicio de la relación laboral
+                      </label>
+                      <input
+                        id="employmentStart"
+                        type="date"
+                        data-required="true"
+                      >
+                    </div>
+                    <div class="field">
+                      <label for="employmentEnd" data-i18n="employmentEndLabel">
+                        Fecha de fin de la relación (si terminó)
+                      </label>
+                      <input
+                        id="employmentEnd"
+                        type="date"
+                      >
+                      <small data-i18n="employmentEndHelp">
+                        Déjalo en blanco si sigues trabajando en la empresa.
+                      </small>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="inspectionProvince" data-i18n="inspectionProvinceLabel">
+                      Provincia donde presentarás la denuncia
+                    </label>
+                    <input
+                      id="inspectionProvince"
+                      type="text"
+                      data-i18n-placeholder="inspectionProvincePlaceholder"
+                      placeholder="Provincia de la Inspección de Trabajo"
+                    >
+                  </div>
+                </div>
+
+                <!-- Paso 3: Hechos -->
+                <div
+                  class="form-step"
+                  data-step="3"
+                  id="step-3"
+                  role="tabpanel"
+                  aria-labelledby="tab-step-3"
+                  hidden
+                >
+                  <h2 class="step-title" data-i18n="step3Title">
+                    Hechos que denuncias
+                  </h2>
+                  <p class="step-intro" data-i18n="step3Intro">
+                    Selecciona el tipo de problema y describe con detalle qué está ocurriendo.
+                  </p>
+
+                  <div class="field">
+                    <label data-i18n="issueTypeLabel">
+                      Tipo principal de irregularidad
+                    </label>
+                    <div class="chip-group">
+                      <label class="chip">
+                        <input type="checkbox" name="issueType" value="noContract">
+                        <span data-i18n="issueNoContract">
+                          Trabajo sin contrato / alta en Seguridad Social
+                        </span>
+                      </label>
+                      <label class="chip">
+                        <input type="checkbox" name="issueType" value="unpaidHours">
+                        <span data-i18n="issueUnpaidHours">
+                          Horas extra no pagadas / no compensadas
+                        </span>
+                      </label>
+                      <label class="chip">
+                        <input type="checkbox" name="issueType" value="wages">
+                        <span data-i18n="issueWages">
+                          Salarios impagados o por debajo de convenio
+                        </span>
+                      </label>
+                      <label class="chip">
+                        <input type="checkbox" name="issueType" value="safety">
+                        <span data-i18n="issueSafety">
+                          Riesgos laborales / seguridad y salud
+                        </span>
+                      </label>
+                      <label class="chip">
+                        <input type="checkbox" name="issueType" value="harassment">
+                        <span data-i18n="issueHarassment">
+                          Acoso laboral o sexual
+                        </span>
+                      </label>
+                      <label class="chip">
+                        <input type="checkbox" name="issueType" value="discrimination">
+                        <span data-i18n="issueDiscrimination">
+                          Discriminación (sexo, origen, etc.)
+                        </span>
+                      </label>
+                      <label class="chip">
+                        <input type="checkbox" name="issueType" value="other">
+                        <span data-i18n="issueOther">
+                          Otros incumplimientos
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="field-row">
+                    <div class="field">
+                      <label for="factsStart" data-i18n="factsStartLabel">
+                        Desde cuándo ocurre
+                      </label>
+                      <input
+                        id="factsStart"
+                        type="date"
+                      >
+                    </div>
+                    <div class="field">
+                      <label for="factsEnd" data-i18n="factsEndLabel">
+                        Hasta cuándo
+                      </label>
+                      <input
+                        id="factsEnd"
+                        type="date"
+                      >
+                      <div class="checkbox-row">
+                        <input id="factsOngoing" type="checkbox">
+                        <label for="factsOngoing" data-i18n="factsOngoingLabel">
+                          Sigue ocurriendo en la actualidad
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="workSchedule" data-i18n="workScheduleLabel">
+                      Jornada y horario habitual
+                    </label>
+                    <textarea
+                      id="workSchedule"
+                      data-i18n-placeholder="workSchedulePlaceholder"
+                      placeholder="Ejemplo: 40 horas semanales, lunes a viernes de 9:00 a 17:00..."
+                    ></textarea>
+                  </div>
+
+                  <!-- Relato estructurado de los hechos -->
+                  <div class="field">
+                    <label data-i18n="factsDescriptionLabel">
+                      Relato detallado de los hechos
+                    </label>
+                    <p class="field-hint" data-i18n="factsEntriesHelp">
+                      Añade una línea por cada hecho relevante, indicando fecha, lugar, turno, qué ocurrió, cómo se desarrolló y quiénes fueron testigos.
+                    </p>
+
+                    <div id="factsEntries" class="repeatable">
+                      <div class="repeat-row facts-row">
+                        <input
+                          type="date"
+                          class="repeat-input facts-date"
+                          aria-label="Fecha del hecho"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input facts-place"
+                          data-i18n-placeholder="factsPlacePlaceholder"
+                          placeholder="Lugar"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input facts-shift"
+                          data-i18n-placeholder="factsShiftPlaceholder"
+                          placeholder="Turno"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input facts-fact"
+                          data-required="true"
+                          data-i18n-placeholder="factsFactPlaceholder"
+                          placeholder="Hecho principal"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input facts-dev"
+                          data-i18n-placeholder="factsDevPlaceholder"
+                          placeholder="Desarrollo"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input facts-witnesses"
+                          data-i18n-placeholder="factsWitnessesInlinePlaceholder"
+                          placeholder="Testigos"
+                        >
+                        <button
+                          type="button"
+                          class="icon-button-small repeat-remove"
+                          aria-label="Eliminar línea"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="btn ghost btn-sm"
+                      id="addFactEntry"
+                      data-i18n="addFactEntry"
+                    >
+                      Añadir línea
+                    </button>
+                  </div>
+
+                  <!-- Pruebas y documentación estructuradas -->
+                  <div class="field">
+                    <label data-i18n="evidenceLabel">
+                      Pruebas y documentación disponible
+                    </label>
+                    <p class="field-hint" data-i18n="evidenceHelpInline">
+                      Describe cada prueba indicando el tipo, el título del archivo y un breve resumen del contenido. No adjuntes los documentos aquí; solo se mencionan en la denuncia.
+                    </p>
+
+                    <div id="evidenceEntries" class="repeatable">
+                      <div class="repeat-row evidence-row">
+                        <input
+                          type="text"
+                          class="repeat-input evidence-type"
+                          data-i18n-placeholder="evidenceTypePlaceholder"
+                          placeholder="Tipo de prueba (vídeo, audio, imagen, documento...)"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input evidence-title"
+                          data-i18n-placeholder="evidenceTitlePlaceholder"
+                          placeholder="Título o descripción del archivo"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input evidence-summary"
+                          data-i18n-placeholder="evidenceSummaryPlaceholder"
+                          placeholder="Resumen del contenido más relevante"
+                        >
+                        <button
+                          type="button"
+                          class="icon-button-small repeat-remove"
+                          aria-label="Eliminar línea"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="btn ghost btn-sm"
+                      id="addEvidenceEntry"
+                      data-i18n="addEvidenceEntry"
+                    >
+                      Añadir prueba
+                    </button>
+                  </div>
+
+                  <!-- Personas testigo estructuradas -->
+                  <div class="field">
+                    <label data-i18n="witnessesLabel">
+                      Personas testigo (si las hay)
+                    </label>
+                    <p class="field-hint" data-i18n="witnessesHelpInline">
+                      Añade una línea por cada persona que pueda declarar sobre los hechos, indicando su nombre, cargo o relación con la empresa y cualquier información relevante (por ejemplo, si puede ser cómplice del acosador).
+                    </p>
+
+                    <div id="witnessEntries" class="repeatable">
+                      <div class="repeat-row witness-row">
+                        <input
+                          type="text"
+                          class="repeat-input witness-name"
+                          data-i18n-placeholder="witnessNamePlaceholder"
+                          placeholder="Nombre"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input witness-role"
+                          data-i18n-placeholder="witnessRolePlaceholder"
+                          placeholder="Cargo o relación con la empresa"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input witness-info"
+                          data-i18n-placeholder="witnessInfoPlaceholder"
+                          placeholder="Otra información relevante"
+                        >
+                        <button
+                          type="button"
+                          class="icon-button-small repeat-remove"
+                          aria-label="Eliminar línea"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="btn ghost btn-sm"
+                      id="addWitnessEntry"
+                      data-i18n="addWitnessEntry"
+                    >
+                      Añadir persona testigo
+                    </button>
+                  </div>
+
+                  <div class="field">
+                    <div class="checkbox-row">
+                      <input id="requestAnonymity" type="checkbox">
+                      <label for="requestAnonymity" data-i18n="requestAnonymityLabel">
+                        Solicito que mi identidad no sea comunicada a la empresa denunciada.
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Peticiones adicionales estructuradas -->
+                  <div class="field">
+                    <label data-i18n="additionalRequestsLabel">
+                      Peticiones adicionales
+                    </label>
+                    <p class="field-hint" data-i18n="additionalRequestsHelpInline">
+                      Si quieres, añade peticiones concretas (por ejemplo, que se inspeccione un centro concreto o que se revise determinada documentación).
+                    </p>
+
+                    <div id="requestEntries" class="repeatable">
+                      <div class="repeat-row request-row">
+                        <input
+                          type="text"
+                          class="repeat-input request-title"
+                          data-i18n-placeholder="requestTitlePlaceholder"
+                          placeholder="Título de la petición"
+                        >
+                        <input
+                          type="text"
+                          class="repeat-input request-reason"
+                          data-i18n-placeholder="requestReasonPlaceholder"
+                          placeholder="Razón o explicación"
+                        >
+                        <button
+                          type="button"
+                          class="icon-button-small repeat-remove"
+                          aria-label="Eliminar línea"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="btn ghost btn-sm"
+                      id="addRequestEntry"
+                      data-i18n="addRequestEntry"
+                    >
+                      Añadir petición
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Paso 4: Revisión y exportación -->
+                <div
+                  class="form-step"
+                  data-step="4"
+                  id="step-4"
+                  role="tabpanel"
+                  aria-labelledby="tab-step-4"
+                  hidden
+                >
+                  <h2 class="step-title" data-i18n="step4Title">
+                    Revisa y exporta tu escrito
+                  </h2>
+                  <p class="step-intro" data-i18n="step4Intro">
+                    Revisa que la información es correcta. Después, podrás exportar el documento en PDF y decidir si lo presentas ante la autoridad laboral competente del país seleccionado.
+                  </p>
+
+                  <div class="preview-wrapper">
+                    <label for="previewText" data-i18n="previewLabel">
+                      Vista previa del texto
+                    </label>
+                    <textarea id="previewText" class="preview-area" readonly></textarea>
+                  </div>
+
+                  <div class="field">
+                    <div class="checkbox-row">
+                      <input id="confirmAccuracy" type="checkbox">
+                      <label for="confirmAccuracy" data-i18n="confirmAccuracyLabel">
+                        Declaro que la información que facilito es verdadera según mi leal saber y entender.
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <small data-i18n="legalDisclaimer">
+                      Esta herramienta es orientativa y no sustituye el asesoramiento jurídico profesional. Revisa siempre el documento final y, si tienes dudas, consulta con un sindicato, graduado/a social o abogado/a laboralista.
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Navegación del wizard (opcional además de las pestañas) -->
+                <div class="wizard-nav">
+                  <button type="button" class="btn ghost" id="btnPrevStep" data-i18n="prevStep">
+                    Atrás
+                  </button>
+                  <button type="button" class="btn primary" id="btnNextStep" data-i18n="nextStep">
+                    Siguiente
+                  </button>
+                  <button type="submit" class="btn primary" id="btnGeneratePdf" data-i18n="generatePdf" hidden>
+                    Exportar escrito en PDF
+                  </button>
+                </div>
+              </form>
+
+              <!-- Pie interior + offline -->
+              <div class="bottom-row">
+                <div id="helperText" class="lint-summary" data-i18n="helperText">
+                  Tus datos no salen de este dispositivo. Aquí solo ordenas información y generas un borrador exportable.
+                </div>
+                <div class="offline-pill" id="offlinePill">
+                  <span class="dot"></span>
+                  <span data-i18n="offlineLabel">
+                    Funciona 100% sin conexión
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <!-- ================= FOOTER ================= -->
+      <footer class="brand-footer" id="siteFooter">
+        <div class="footer-left">
+          <div class="f-left-row1">
+            <strong>OptimeFlow(s)®</strong>
+            <span class="sep">•</span>
+            <span id="footerAppName">NoEstásSol@</span>
+          </div>
+          <div class="f-left-row2">
+            <span id="f-year">2025</span>
+            <span class="sep">•</span>
+            <a
+              id="f-author"
+              class="footer-text-link"
+              href="https://orcid.org/0009-0005-4079-7418"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="ORCID de Andrés Calvo Espinosa"
+              title="Abrir ORCID de Andrés Calvo Espinosa"
+            >Andrés Calvo Espinosa</a>
+          </div>
+        </div>
+        <div class="footer-center">
+          <button
+            type="button"
+            class="footer-logo-btn"
+            id="coherenceLink"
+            aria-label="Coherencia Universal"
+            onclick="window.showCoherenceOverlay && window.showCoherenceOverlay();"
+          >
+            <img
+              class="tag-logo footer-logo heat"
+              src="assets/img/noestassolo192.png"
+              alt="NoEstásSol@"
+            >
+          </button>
+        </div>
+
+        <div class="footer-right">
+          <button class="btn ghost" id="licenseLink" data-i18n="licenseLink">
+            Licencia MIT
+          </button>
+          <button class="btn ghost" id="privacyLink" data-i18n="privacyLink">
+            Privacidad
+          </button>
+        </div>
+      </footer>
+
+      <!-- Overlay de control de licencia -->
+      <div class="overlay" id="licenseGateOverlay" hidden>
+        <div class="box">
+          <h2 id="licenseGateTitle"></h2>
+          <p id="licenseGateMessage" class="small" style="line-height:1.55"></p>
+          <div class="overlay-actions" id="licenseGateActions"></div>
+        </div>
+      </div>
+
+      <!-- Overlay Licencia MIT -->
+      <div class="overlay" id="licenseOverlay" hidden>
+        <div class="box">
+          <h2 data-i18n="licenseTitle">
+            Licencia MIT
+          </h2>
+          <pre class="license-text" id="licenseBody"></pre>
+          <div class="overlay-actions">
+            <button class="btn ghost" data-close="licenseOverlay" data-i18n="close">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay Política de privacidad -->
+      <div class="overlay" id="privacyOverlay" hidden>
+        <div class="box">
+          <h2 id="ppTitle" data-i18n="privacyTitle">
+            Política de privacidad
+          </h2>
+          <div id="ppBody" class="small" style="line-height:1.55"></div>
+          <div class="overlay-actions">
+            <button class="btn ghost" data-close="privacyOverlay" data-i18n="close">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay Coherencia Universal -->
+      <div class="overlay" id="coherenceOverlay" hidden>
+        <div class="box">
+          <h2>Coherencia Universal</h2>
+          <p class="small" style="line-height:1.55">
+            Que esta obra sirva como agradecimiento y como compromiso: pensar, sentir y actuar en la misma dirección, sin "adornos"; seguir creando con ética, con alegría y con respeto por todo lo que nos conecta.
+          </p>
+          <div class="overlay-actions">
+            <button class="btn ghost" data-close="coherenceOverlay" data-i18n="close">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div> <!-- .page-root -->
+
+    <!-- Filtro “heat waves” para el logo -->
+    <svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+      <filter id="heat-waves">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="1" seed="3">
+          <animate attributeName="baseFrequency"
+                   dur="7.5s"
+                   values="0.012 0.02; 0.02 0.04; 0.012 0.02; 0.012 0.02"
+                   keyTimes="0;0.3;0.6;1"
+                   calcMode="spline"
+                   keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0 0 1 1"
+                   repeatCount="indefinite" />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" scale="0">
+          <animate attributeName="scale"
+                   dur="7.5s"
+                   values="0;28;0;0"
+                   keyTimes="0;0.3;0.6;1"
+                   calcMode="spline"
+                   keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0 0 1 1"
+                   repeatCount="indefinite" />
+        </feDisplacementMap>
+      </filter>
+    </svg>
+  </body>
+</html>
