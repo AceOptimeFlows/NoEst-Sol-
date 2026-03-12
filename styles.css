@@ -240,16 +240,34 @@ html[data-theme="light"]{
   box-sizing:border-box;
 }
 
-html,body{
-  height:100%;
+html,
+body{
+  min-height:100%;
+}
+
+html{
+  background-color: var(--bg);
 }
 
 body{
   margin:0;
   font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
-  background: var(--bg-hero);
+  background: transparent;
   color:var(--text);
   -webkit-font-smoothing: antialiased;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-color: var(--bg);
+  background-image: var(--bg-hero);
+  background-repeat:no-repeat;
+  background-position:center top;
+  background-size:100% 100%;
 }
 
 [hidden]{
@@ -260,8 +278,9 @@ body{
   min-height:100vh;
   display:flex;
   flex-direction:column;
+  position:relative;
+  z-index:1;
 }
-
 /* ================= HEADER ================= */
 
 .brand-header{
