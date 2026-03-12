@@ -1,7 +1,7 @@
 /* sw.js – NoEstásSol@ 100% offline shell */
 
 const APP_PREFIX = 'noestassolo';
-const APP_VERSION = 'v.1.0';
+const APP_VERSION = 'version-1.0';
 
 const STATIC_CACHE = `${APP_PREFIX}-static-${APP_VERSION}`;
 const IMG_CACHE = `${APP_PREFIX}-img-${APP_VERSION}`;

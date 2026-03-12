@@ -13,6 +13,7 @@ authors:
   - given-names: "Andrés"
     family-names: "Calvo Espinosa"
     orcid: "https://orcid.org/0009-0005-4079-7418"
+    Zenodo DOI: "10.5281/zenodo.18972272"
 keywords:
   - PWA
   - offline-first

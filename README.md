@@ -468,6 +468,8 @@ Website: https://optimeflow.com/
 
 ORCID: https://orcid.org/0009-0005-4079-7418
 
+ZENODO DOI: 10.5281/zenodo.18972272
+
 Suggested roadmap
 
 add basic draft generation tests
