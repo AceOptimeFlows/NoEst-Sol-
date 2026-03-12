@@ -1,183 +1,226 @@
-/* sw.js – Service Worker mejorado de NoEstásSol@ */
+/* sw.js – NoEstásSol@ 100% offline shell */
 
-const APP_PREFIX  = 'noestássol@';
-const APP_VERSION = 'v-1.0.0';
+const APP_PREFIX = 'noestassolo';
+const APP_VERSION = 'ver-1.1.0';
 
-const STATIC_CACHE  = `${APP_PREFIX}-static-${APP_VERSION}`;
-const IMG_CACHE     = `${APP_PREFIX}-img-${APP_VERSION}`;
+const STATIC_CACHE = `${APP_PREFIX}-static-${APP_VERSION}`;
+const IMG_CACHE = `${APP_PREFIX}-img-${APP_VERSION}`;
 const RUNTIME_CACHE = `${APP_PREFIX}-rt-${APP_VERSION}`;
 
-// Shell básico de la app (lo que quieres tener sí o sí offline)
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './i18n.js',
+  './export.js',
   './manifest.json',
-  './export.json',
   './assets/img/logo.png',
-  './assets/img/noestassolo192.png',
   './assets/img/noestassolo180.png',
+  './assets/img/noestassolo192.png',
   './assets/img/noestassolo512.png',
-  './lang/es.json',
+  './assets/img/noestassolo-maskable-192.png',
+  './assets/img/noestassolo-maskable-512.png',
+  './lang/de.json',
   './lang/en.json',
-  './lang/pt-br.json',
+  './lang/es.json',
   './lang/fr.json',
   './lang/it.json',
-  './lang/de.json',
-  './lang/ko.json',
   './lang/ja.json',
-  './lang/zh.json',
-  './lang/ru.json'
+  './lang/ko.json',
+  './lang/pt-br.json',
+  './lang/ru.json',
+  './lang/zh.json'
 ];
 
-// Parámetros de comportamiento
-const IMG_CACHE_MAX_ENTRIES = 60;    // Límite simple LRU para imágenes
-const HTML_NETWORK_TIMEOUT  = 3500;  // ms para abortar navegaciones lentas
+const IMG_CACHE_MAX_ENTRIES = 60;
+const HTML_NETWORK_TIMEOUT = 3500;
 
-// ------------------------
-// Helpers comunes
-// ------------------------
-
-function sameOrigin(u) {
+function sameOrigin(url) {
   try {
-    return new URL(u, self.location).origin === self.location.origin;
-  } catch {
+    return new URL(url, self.location.href).origin === self.location.origin;
+  } catch (_err) {
     return false;
   }
 }
 
-async function putWithLRU(cacheName, request, response, max) {
+function toAbsoluteUrl(resource) {
+  return new URL(resource, self.registration.scope).href;
+}
+
+function isSuccessfulResponse(response) {
+  return !!(response && (response.ok || response.type === 'opaque'));
+}
+
+async function putWithLRU(cacheName, request, response, maxEntries) {
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
+
   const keys = await cache.keys();
-  if (keys.length > max) {
-    // FIFO simple: borra el primero que entró
-    await cache.delete(keys[0]);
+  while (keys.length > maxEntries) {
+    const oldest = keys.shift();
+    if (!oldest) break;
+    await cache.delete(oldest);
   }
 }
 
-// Página offline sencilla para cuando no hay red ni caché
 function offlineFallbackResponse() {
-  const html = `
-    <!doctype html>
-    <html lang="es">
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      <title>Sin conexión – NoEstásSol@</title>
-      <style>
-        :root { color-scheme: dark; }
-        body{
-          margin:0;
-          font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-          display:grid;
-          place-items:center;
-          min-height:100vh;
-          background:#020617;
-          color:#e5e7eb;
-        }
-        .card{
-          background:#020617;
-          border:1px solid #1f2937;
-          border-radius:16px;
-          padding:20px 22px;
-          max-width:520px;
-          box-shadow:0 18px 45px rgba(0,0,0,.75);
-        }
-        h1{
-          margin:0 0 8px;
-          font-size:1.3rem;
-        }
-        p{
-          margin:4px 0;
-          line-height:1.5;
-          opacity:.9;
-        }
-        small{ opacity:.8; font-size:.8rem; }
-      </style>
-    </head>
-    <body>
-      <div class="card">
-        <h1>Estás sin conexión</h1>
-        <p>No hemos podido cargar NoEstásSol@ desde la red y tampoco había una copia disponible en este dispositivo.</p>
-        <p>Cuando vuelvas a tener Internet, abre de nuevo la app para actualizar el contenido.</p>
-        <small>NoEstásSol@ – cuidando tu bienestar también offline.</small>
-      </div>
-    </body>
-    </html>`;
+  const html = `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#020617">
+    <title>Sin conexión – NoEstásSol@</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #020617;
+        color: #e5e7eb;
+      }
+      .card {
+        width: min(560px, 100%);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 18px;
+        padding: 22px;
+        background:
+          radial-gradient(circle at 0% 0%, rgba(56,189,248,0.16), transparent 55%),
+          linear-gradient(145deg, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
+        box-shadow: 0 18px 45px rgba(0,0,0,0.75);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 1.35rem;
+      }
+      p {
+        margin: 8px 0;
+        line-height: 1.55;
+        color: #cbd5e1;
+      }
+      strong {
+        color: #f8fafc;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="card">
+      <h1>Estás sin conexión</h1>
+      <p><strong>NoEstásSol@</strong> no ha podido acceder a la red, pero la app sí debería funcionar offline después de haberse abierto al menos una vez con Internet.</p>
+      <p>Si esta pantalla aparece, vuelve a abrir la app una vez online para que el dispositivo guarde la versión local completa.</p>
+    </section>
+  </body>
+</html>`;
+
   return new Response(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store'
+    }
   });
 }
 
-// Estrategia cache-first reutilizable
 async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  if (cached) return cached;
+  const cached = await cache.match(request, { ignoreSearch: true });
+  if (cached) {
+    return cached;
+  }
 
   try {
-    const res = await fetch(request);
-    if (res && res.ok) {
-      await cache.put(request, res.clone());
+    const response = await fetch(request);
+    if (isSuccessfulResponse(response)) {
+      await cache.put(request, response.clone());
     }
-    return res;
-  } catch {
-    // Si es un documento y no hay nada, devolvemos HTML offline
-    return cached || (request.destination === 'document'
-      ? offlineFallbackResponse()
-      : Response.error());
+    return response;
+  } catch (_err) {
+    if (request.destination === 'document') {
+      return offlineFallbackResponse();
+    }
+    return Response.error();
   }
 }
 
-// ------------------------
-// Install
-// ------------------------
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) =>
-      cache.addAll(
-        APP_SHELL.map((u) => new Request(u, { cache: 'reload' }))
-      )
-    )
+async function warmAppShell() {
+  const cache = await caches.open(STATIC_CACHE);
+
+  await Promise.all(
+    APP_SHELL.map(async (resource) => {
+      try {
+        const request = new Request(resource, { cache: 'reload' });
+        const response = await fetch(request);
+        if (response && response.ok) {
+          await cache.put(request, response.clone());
+        } else {
+          console.warn('[NoEstásSol@] Recurso omitido del caché estático:', resource);
+        }
+      } catch (err) {
+        console.warn('[NoEstásSol@] No se pudo precachear:', resource, err);
+      }
+    })
   );
+}
+
+async function matchCachedAppShell(cache, request) {
+  const candidates = [
+    request,
+    request.url,
+    './',
+    './index.html',
+    toAbsoluteUrl('./'),
+    toAbsoluteUrl('./index.html')
+  ];
+
+  for (const candidate of candidates) {
+    const cached = await cache.match(candidate, { ignoreSearch: true });
+    if (cached) {
+      return cached;
+    }
+  }
+
+  return null;
+}
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(warmAppShell());
   self.skipWaiting();
 });
 
-// ------------------------
-// Activate
-// ------------------------
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    const keys = await caches.keys();
-
+    const existingKeys = await caches.keys();
     const keep = new Set([STATIC_CACHE, IMG_CACHE, RUNTIME_CACHE]);
-
-    // Solo limpiamos cachés que claramente pertenecen a NoEstásSol@
-    const prefixes = [
+    const knownPrefixes = [
       `${APP_PREFIX}-static-`,
       `${APP_PREFIX}-img-`,
       `${APP_PREFIX}-rt-`,
+      'noestássol@-static-',
+      'noestássol@-img-',
+      'noestássol@-rt-',
       'nes-static-',
       'nes-runtime-'
     ];
 
     await Promise.all(
-      keys.map((key) => {
-        if (prefixes.some((p) => key.startsWith(p)) && !keep.has(key)) {
+      existingKeys.map((key) => {
+        if (knownPrefixes.some((prefix) => key.startsWith(prefix)) && !keep.has(key)) {
           return caches.delete(key);
         }
+        return Promise.resolve(false);
       })
     );
 
-    // Habilita navigationPreload cuando esté disponible
     if ('navigationPreload' in self.registration) {
       try {
         await self.registration.navigationPreload.enable();
-      } catch (_) {
-        // ignoramos errores silenciosamente
+      } catch (_err) {
+        // ignore silently
       }
     }
 
@@ -185,130 +228,119 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
-// ------------------------
-// Mensajes (p.ej. SKIP_WAITING)
-// ------------------------
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-// ------------------------
-// Fetch strategies
-// ------------------------
 self.addEventListener('fetch', (event) => {
-  const req = event.request;
+  const request = event.request;
 
-  if (req.method !== 'GET') return;
-
-  const url = new URL(req.url);
-
-  // Solo gestionamos peticiones del mismo origen
-  if (!sameOrigin(req.url)) {
+  if (request.method !== 'GET') {
     return;
   }
 
-  // 1) Navegación (HTML / SPA): network-primero con timeout + fallback offline
-  if (req.mode === 'navigate' || req.destination === 'document') {
+  if (!sameOrigin(request.url)) {
+    return;
+  }
+
+  const url = new URL(request.url);
+
+  if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith((async () => {
       const cache = await caches.open(STATIC_CACHE);
-      const cachedIndex = await cache.match('./index.html');
+      const cachedShell = await matchCachedAppShell(cache, request);
 
-      // Intentamos usar navigationPreload si está disponible
       try {
-        const preload = await event.preloadResponse;
-        if (preload) {
-          try {
-            await cache.put('./index.html', preload.clone());
-          } catch (_) {}
-          return preload;
+        const preloadResponse = await event.preloadResponse;
+        if (preloadResponse) {
+          await cache.put('./index.html', preloadResponse.clone());
+          await cache.put('./', preloadResponse.clone());
+          return preloadResponse;
         }
-      } catch (_) {
-        // ignoramos cualquier error de preload
+      } catch (_err) {
+        // ignore silently
       }
 
-      // Carrera red vs timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), HTML_NETWORK_TIMEOUT);
 
       try {
-        const net = await fetch(req, { signal: controller.signal });
+        const networkResponse = await fetch(request, { signal: controller.signal });
         clearTimeout(timeoutId);
-        if (net && net.ok) {
-          try {
-            await cache.put('./index.html', net.clone());
-          } catch (_) {}
+
+        if (networkResponse && networkResponse.ok) {
+          await cache.put('./index.html', networkResponse.clone());
+          await cache.put('./', networkResponse.clone());
         }
-        return net;
-      } catch (_) {
+
+        return networkResponse;
+      } catch (_err) {
         clearTimeout(timeoutId);
-        // Si no hay red, usamos index cacheada o HTML offline
-        return cachedIndex || offlineFallbackResponse();
+        return cachedShell || offlineFallbackResponse();
       }
     })());
     return;
   }
 
-  // 2) Imágenes del mismo origen: stale-while-revalidate con LRU
-  if (req.destination === 'image') {
+  if (request.destination === 'image') {
     event.respondWith((async () => {
       const cache = await caches.open(IMG_CACHE);
-      const cached = await cache.match(req);
+      const cached = await cache.match(request, { ignoreSearch: true });
 
-      const fetchPromise = fetch(req)
-        .then(async (res) => {
-          if (res && res.ok) {
-            await putWithLRU(IMG_CACHE, req, res.clone(), IMG_CACHE_MAX_ENTRIES);
+      const fetchPromise = fetch(request)
+        .then(async (response) => {
+          if (response && response.ok) {
+            await putWithLRU(IMG_CACHE, request, response.clone(), IMG_CACHE_MAX_ENTRIES);
           }
-          return res;
+          return response;
         })
         .catch(() => null);
 
       if (cached) {
-        // Mientras devolvemos la caché, dejamos que la red actualice en segundo plano
         event.waitUntil(fetchPromise);
         return cached;
       }
 
-      return fetchPromise || Response.error();
+      const fresh = await fetchPromise;
+      return fresh || Response.error();
     })());
     return;
   }
 
-  // 3) Recursos estáticos locales: cache-first
-  if (sameOrigin(req.url)) {
-    const pathname = url.pathname;
+  const isStaticAsset =
+    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.json') ||
+    url.pathname.endsWith('.png') ||
+    url.pathname.endsWith('.jpg') ||
+    url.pathname.endsWith('.jpeg') ||
+    url.pathname.endsWith('.svg') ||
+    url.pathname.endsWith('.webp') ||
+    url.pathname.endsWith('.ico') ||
+    url.pathname.endsWith('.woff') ||
+    url.pathname.endsWith('.woff2');
 
-    const isStatic =
-      pathname.endsWith('.html') ||
-      pathname.endsWith('.json') ||
-      pathname.endsWith('.ico')  ||
-      pathname.endsWith('.css')  ||
-      pathname.endsWith('.js')   ||
-      pathname.endsWith('.woff') || pathname.endsWith('.woff2') ||
-      pathname.startsWith('/icons/') ||
-      pathname.startsWith('/assets/');
-
-    if (isStatic) {
-      event.respondWith(cacheFirst(req, STATIC_CACHE));
-      return;
-    }
+  if (isStaticAsset) {
+    event.respondWith(cacheFirst(request, STATIC_CACHE));
+    return;
   }
 
-  // 4) Resto de peticiones del mismo origen: cache runtime simple
   event.respondWith((async () => {
     const cache = await caches.open(RUNTIME_CACHE);
-    const cached = await cache.match(req);
-    if (cached) return cached;
+    const cached = await cache.match(request, { ignoreSearch: true });
+    if (cached) {
+      return cached;
+    }
 
     try {
-      const res = await fetch(req);
-      if (res && (res.ok || res.type === 'opaque')) {
-        await cache.put(req, res.clone());
+      const response = await fetch(request);
+      if (isSuccessfulResponse(response)) {
+        await cache.put(request, response.clone());
       }
-      return res;
-    } catch (_) {
+      return response;
+    } catch (_err) {
       return cached || Response.error();
     }
   })());

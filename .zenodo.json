@@ -1,0 +1,26 @@
+{
+  "title": "NoEstásSol@ · OptimeFlow(s)",
+  "version": "1.0.0",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "mit",
+  "language": "eng",
+  "creators": [
+    {
+      "name": "Calvo Espinosa, Andrés",
+      "orcid": "0009-0005-4079-7418"
+    }
+  ],
+  "description": "Progressive Web App (PWA) designed to organize workplace facts, structure evidence, and generate a PDF-exportable draft directly in the browser. It is intended to run 100% on the user's device, including offline, through a guided step-by-step experience.",
+  "keywords": [
+    "PWA",
+    "offline-first",
+    "client-side",
+    "workplace documentation",
+    "labor reporting",
+    "privacy by design",
+    "jsPDF",
+    "OptimeFlow(s)",
+    "NoEstásSol@"
+  ]
+}

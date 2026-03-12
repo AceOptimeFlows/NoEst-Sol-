@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: "NoEstásSol@ · OptimeFlow(s)"
+version: "1.0.0"
+type: software
+license: "MIT"
+message: "If you use this software, please cite it using the metadata below."
+abstract: >-
+  Progressive Web App (PWA) designed to organize workplace facts, structure
+  evidence, and generate a PDF-exportable draft directly in the browser. It is
+  intended to run 100% on the user's device, including offline, through a
+  guided step-by-step experience.
+authors:
+  - given-names: "Andrés"
+    family-names: "Calvo Espinosa"
+    orcid: "https://orcid.org/0009-0005-4079-7418"
+keywords:
+  - PWA
+  - offline-first
+  - client-side
+  - workplace documentation
+  - labor reporting
+  - privacy by design
+  - jsPDF
+  - OptimeFlow(s)
+  - NoEstásSol@
