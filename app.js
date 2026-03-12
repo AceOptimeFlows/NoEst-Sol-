@@ -75,9 +75,46 @@
     br: 'pt-br'
   };
 
+  const SUPPORTED_UI_LANGS = [
+    'es',
+    'en',
+    'it',
+    'de',
+    'ru',
+    'pt-br',
+    'ko',
+    'ja',
+    'zh'
+  ];
+
   let currentCountry = 'es';
   let currentUILang = 'es';
   let currentLoadedLang = null;
+
+  function isSupportedUILang(lang) {
+    return SUPPORTED_UI_LANGS.includes(String(lang || '').toLowerCase());
+  }
+
+  function normalizeUILang(lang) {
+    const value = String(lang || '').toLowerCase();
+    if (value === 'pt') return 'pt-br';
+    return isSupportedUILang(value) ? value : null;
+  }
+
+  function detectInitialUILang(browserLang) {
+    const value = String(browserLang || 'es').toLowerCase();
+
+    if (value.startsWith('es')) return 'es';
+    if (value.startsWith('pt')) return 'pt-br';
+    if (value.startsWith('it')) return 'it';
+    if (value.startsWith('de')) return 'de';
+    if (value.startsWith('ru')) return 'ru';
+    if (value.startsWith('ko')) return 'ko';
+    if (value.startsWith('ja')) return 'ja';
+    if (value.startsWith('zh')) return 'zh';
+
+    return 'en';
+  }
 
   function getLetterLanguageForCountry(code) {
     const key = code && COUNTRY_LETTER_LANG[code] ? code : 'es';
@@ -85,14 +122,14 @@
   }
 
   function getCurrentUILang() {
-    return currentUILang || 'es';
+    return normalizeUILang(currentUILang) || 'es';
   }
 
   async function ensureLanguageLoaded(lang) {
     if (!window.I18N || typeof window.I18N.loadLanguage !== 'function') {
       return;
     }
-    const target = lang || 'es';
+    const target = normalizeUILang(lang) || 'es';
     if (currentLoadedLang === target) return;
     try {
       await window.I18N.loadLanguage(target);
@@ -138,16 +175,16 @@
 
   function buildLicenseText() {
     const fallback = [
-  'Licencia MIT',
-  '',
-  'Copyright (c) 2025 Andrés Calvo Espinosa',
-  '',
-  'Por la presente se concede permiso, sin cargo, a cualquier persona que obtenga una copia de este software y de los archivos de documentación asociados (el «Software»), para utilizar el Software sin restricción, incluyendo, sin limitación, los derechos de usar, copiar, modificar, fusionar, publicar, distribuir, sublicenciar y/o vender copias del Software, y para permitir a las personas a las que se les proporcione el Software hacer lo mismo, sujeto a las siguientes condiciones:',
-  '',
-  'El aviso de copyright anterior y este aviso de permiso deberán incluirse en todas las copias o partes sustanciales del Software.',
-  '',
-  'EL SOFTWARE SE PROPORCIONA «TAL CUAL», SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUYENDO, PERO SIN LIMITARSE A, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN. EN NINGÚN CASO LOS AUTORES O TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGUNA RECLAMACIÓN, DAÑO U OTRA RESPONSABILIDAD, YA SEA EN UNA ACCIÓN CONTRACTUAL, EXTRACONTRACTUAL O DE OTRO TIPO, QUE SURJA DE, O EN RELACIÓN CON, EL SOFTWARE O EL USO U OTRAS OPERACIONES EN EL SOFTWARE.'
-].join('\n');
+      'Licencia MIT',
+      '',
+      'Copyright (c) 2025 Andrés Calvo Espinosa',
+      '',
+      'Por la presente se concede permiso, sin cargo, a cualquier persona que obtenga una copia de este software y de los archivos de documentación asociados (el «Software»), para utilizar el Software sin restricción, incluyendo, sin limitación, los derechos de usar, copiar, modificar, fusionar, publicar, distribuir, sublicenciar y/o vender copias del Software, y para permitir a las personas a las que se les proporcione el Software hacer lo mismo, sujeto a las siguientes condiciones:',
+      '',
+      'El aviso de copyright anterior y este aviso de permiso deberán incluirse en todas las copias o partes sustanciales del Software.',
+      '',
+      'EL SOFTWARE SE PROPORCIONA «TAL CUAL», SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUYENDO, PERO SIN LIMITARSE A, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN. EN NINGÚN CASO LOS AUTORES O TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGUNA RECLAMACIÓN, DAÑO U OTRA RESPONSABILIDAD, YA SEA EN UNA ACCIÓN CONTRACTUAL, EXTRACONTRACTUAL O DE OTRO TIPO, QUE SURJA DE, O EN RELACIÓN CON, EL SOFTWARE O EL USO U OTRAS OPERACIONES EN EL SOFTWARE.'
+    ].join('\n');
 
     if (window.I18N && typeof window.I18N.t === 'function') {
       return window.I18N.t('licensePanelBody', fallback);
@@ -1638,6 +1675,46 @@
 
     let settingsOpen = false;
 
+    function syncTranslatedStaticContent() {
+      const t = (key, fallback) => {
+        if (window.I18N && typeof window.I18N.t === 'function') {
+          return window.I18N.t(key, fallback);
+        }
+        return fallback;
+      };
+
+      const coherenceTitle = t('coherenceTitle', 'Coherencia Universal');
+      const coherenceBody = t(
+        'coherenceBody',
+        'Que esta obra sirva como agradecimiento y como compromiso: pensar, sentir y actuar en la misma dirección, sin "adornos"; seguir creando con ética, con alegría y con respeto por todo lo que nos conecta.'
+      );
+
+      if (licenseBody) {
+        licenseBody.textContent = buildLicenseText();
+      }
+
+      if (ppBody) {
+        ppBody.innerHTML = buildPrivacyHtml();
+      }
+
+      if (coherenceLink) {
+        coherenceLink.setAttribute('aria-label', coherenceTitle);
+        coherenceLink.setAttribute('title', coherenceTitle);
+      }
+
+      if (coherenceOverlay) {
+        const titleEl = coherenceOverlay.querySelector('[data-i18n="coherenceTitle"]');
+        const bodyEl = coherenceOverlay.querySelector('[data-i18n="coherenceBody"]');
+
+        if (titleEl) {
+          titleEl.textContent = coherenceTitle;
+        }
+        if (bodyEl) {
+          bodyEl.textContent = coherenceBody;
+        }
+      }
+    }
+
     function openSettings() {
       if (!settingsSheet) return;
       settingsSheet.classList.add('is-open');
@@ -1723,20 +1800,14 @@
     const storedCountry = safeGet(COUNTRY_KEY);
     const browserLang = (navigator.language || 'es').toLowerCase();
 
-    if (storedLang) {
-      initialLang = storedLang;
+    const normalizedStoredLang = normalizeUILang(storedLang);
+    if (normalizedStoredLang) {
+      initialLang = normalizedStoredLang;
     } else {
-      if (browserLang.startsWith('es')) initialLang = 'es';
-      else if (browserLang.startsWith('pt')) initialLang = 'pt-br';
-      else if (browserLang.startsWith('it')) initialLang = 'it';
-      else if (browserLang.startsWith('de')) initialLang = 'de';
-      else if (browserLang.startsWith('ru')) initialLang = 'ru';
-      else if (browserLang.startsWith('ko')) initialLang = 'ko';
-      else if (browserLang.startsWith('ja')) initialLang = 'ja';
-      else if (browserLang.startsWith('zh')) initialLang = 'zh';
-      else if (browserLang.startsWith('hi')) initialLang = 'hi';
-      else if (browserLang.startsWith('ar')) initialLang = 'ar';
-      else initialLang = 'en';
+      initialLang = detectInitialUILang(browserLang);
+      if (storedLang) {
+        safeSet(LANG_KEY, initialLang);
+      }
     }
 
     if (storedCountry) {
@@ -1801,7 +1872,7 @@
 
     if (licenseLink && licenseOverlay) {
       licenseLink.addEventListener('click', () => {
-        if (licenseBody && !licenseBody.textContent.trim()) {
+        if (licenseBody) {
           licenseBody.textContent = buildLicenseText();
         }
         openOverlay(licenseOverlay);
@@ -1810,7 +1881,7 @@
 
     if (privacyLink && privacyOverlay) {
       privacyLink.addEventListener('click', () => {
-        if (ppBody && !ppBody.innerHTML.trim()) {
+        if (ppBody) {
           ppBody.innerHTML = buildPrivacyHtml();
         }
         openOverlay(privacyOverlay);
@@ -1891,6 +1962,7 @@
     });
 
     const wizard = initWizard();
+    syncTranslatedStaticContent();
 
     function loadSavedSessions() {
       const raw = safeGet(SESSIONS_KEY);
@@ -2183,6 +2255,7 @@
 
     if (window.I18N && typeof window.I18N.loadLanguage === 'function') {
       ensureLanguageLoaded(initialLang).then(() => {
+        syncTranslatedStaticContent();
         if (wizard && typeof wizard.updateUI === 'function') {
           wizard.updateUI();
         }
@@ -2190,10 +2263,14 @@
 
       if (langSelect) {
         langSelect.addEventListener('change', () => {
-          const val = langSelect.value || 'es';
+          const val = normalizeUILang(langSelect.value) || 'es';
+          if (langSelect.value !== val) {
+            langSelect.value = val;
+          }
           currentUILang = val;
           safeSet(LANG_KEY, val);
           ensureLanguageLoaded(val).then(() => {
+            syncTranslatedStaticContent();
             if (wizard && typeof wizard.updateUI === 'function') {
               wizard.updateUI();
             }

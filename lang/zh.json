@@ -175,5 +175,7 @@
   "letterAnonymityRequest": "同时，请依据适用法律，不向被投诉公司透露本人的身份。",
   "letterAdditionalRequestsIntro": "此外，本人还陈述如下：",
   "letterClosingPlaceDate": "于 {city}，{date}。",
-  "letterClosingSignatureLabel": "签名："
+  "letterClosingSignatureLabel": "签名：",
+  "coherenceTitle": "普遍一致性",
+"coherenceBody": "愿这部作品既是感谢，也是承诺：朝着同一方向去思考、感受并行动，不加“修饰”；继续以伦理、喜悦，以及对一切连接着我们的事物的尊重去创造。"
 }

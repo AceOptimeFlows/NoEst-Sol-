@@ -417,6 +417,7 @@ python -m http.server 8080
 Then open in your browser:
 
 http://localhost:8080
+
 Deployment
 
 It can be published without issues on static hosting platforms such as:
@@ -470,20 +471,4 @@ ORCID: https://orcid.org/0009-0005-4079-7418
 
 ZENODO DOI: 10.5281/zenodo.18972272
 
-Suggested roadmap
 
-add basic draft generation tests
-
-include richer country-specific validations
-
-allow export to .txt or .docx
-
-add temporary autosave
-
-add confirmation before overwriting sessions
-
-improve documentation for sw.js and manifest.json
-
-publish screenshots in the README
-
-add a limitations and legal notice section

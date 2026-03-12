@@ -175,5 +175,7 @@
   "letterAnonymityRequest": "아울러, 적용 법령에 따라 본인의 신원이 피신고 회사에 공개되지 않도록 명시적으로 요청합니다.",
   "letterAdditionalRequestsIntro": "추가로 다음 사항을 밝혀 둡니다.",
   "letterClosingPlaceDate": "{city}에서, {date}.",
-  "letterClosingSignatureLabel": "서명:"
+  "letterClosingSignatureLabel": "서명:",
+  "coherenceTitle": "보편적 일관성",
+"coherenceBody": "이 작품이 감사이자 다짐이 되기를 바랍니다: ‘꾸밈’ 없이 같은 방향으로 생각하고, 느끼고, 행동하며, 우리를 이어 주는 모든 것에 대한 존중과 기쁨, 그리고 윤리를 바탕으로 계속 창조해 나가기를."
 }

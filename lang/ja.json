@@ -175,5 +175,7 @@
   "letterAnonymityRequest": "あわせて、適用法令に従い、私の氏名を被申立て会社に開示しないよう明示的に求めます。",
   "letterAdditionalRequestsIntro": "さらに、次の点を申し添えます。",
   "letterClosingPlaceDate": "{city}、{date}。",
-  "letterClosingSignatureLabel": "署名："
+  "letterClosingSignatureLabel": "署名：",
+  "coherenceTitle": "普遍的な一貫性",
+"coherenceBody": "この作品が、感謝であると同時に誓いでもありますように。「飾り」なく、同じ方向を向いて考え、感じ、行動し、私たちをつなぐすべてのものへの敬意と喜び、そして倫理をもって、これからも創造し続けられますように。"
 }
